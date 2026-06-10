@@ -1,0 +1,2 @@
+window.SMART_SURVEY_API_BASE = "";
+window.SMART_SURVEY_ADMIN_TOKEN = "";

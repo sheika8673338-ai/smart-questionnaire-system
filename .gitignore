@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+cloudfunctions/submissions/node_modules/
+
+# local runtime data
+data/submissions.json
+data/questionnaire.json
+output/
+
+# build artifacts
+dist/
+
+# secrets and local deployment config
+.env
+.env.*
+!.env.example
+cloudbaserc.json
+config.local.js
+
+# logs and OS/editor files
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/

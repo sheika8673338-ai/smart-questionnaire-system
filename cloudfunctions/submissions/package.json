@@ -1,0 +1,9 @@
+{
+  "name": "smart-questionnaire-submissions",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.10.0"
+  }
+}

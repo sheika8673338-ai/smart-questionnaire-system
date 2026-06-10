@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智能问卷与数据中台系统</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">IQ</span>
+          <div>
+            <h1>智能问卷系统</h1>
+            <p>产学研调研数据中台 MVP</p>
+          </div>
+        </div>
+
+        <nav class="nav-tabs" aria-label="主导航">
+          <button class="nav-tab active" data-view="survey">填写问卷</button>
+          <button class="nav-tab" data-view="admin" data-admin-only>数据中台</button>
+          <button class="nav-tab" data-view="config" data-admin-only>问卷配置</button>
+        </nav>
+
+        <section class="system-status">
+          <div>
+            <span class="status-dot"></span>
+            <strong>本地前端</strong>
+          </div>
+          <div>
+            <span class="status-dot muted"></span>
+            <strong>Serverless 模拟</strong>
+          </div>
+          <div>
+            <span class="status-dot accent"></span>
+            <strong>智能表格底座</strong>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main-content">
+        <section class="topbar">
+          <div>
+            <p class="eyebrow">China University of Mining and Technology</p>
+            <h2 id="viewTitle">调研问卷填写</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="resetDemo" class="ghost-button" type="button" data-admin-only>重置演示数据</button>
+          </div>
+        </section>
+
+        <section id="surveyView" class="view active" aria-label="问卷填写">
+          <div class="survey-layout">
+            <section class="survey-panel">
+              <div class="survey-head">
+                <div>
+                  <p class="eyebrow" id="surveyStage">第 1 页</p>
+                  <h3 id="pageTitle"></h3>
+                </div>
+                <div class="progress-block">
+                  <span id="progressText">0%</span>
+                  <div class="progress-track">
+                    <span id="progressBar"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="questionContainer" class="question-list"></div>
+              <div id="validationSummary" class="validation-summary" hidden></div>
+
+              <div class="form-actions">
+                <button id="prevPage" class="secondary-button" type="button">上一步</button>
+                <button id="nextPage" class="primary-button" type="button">下一步</button>
+              </div>
+            </section>
+
+            <aside class="assist-panel">
+              <h3>智能检查</h3>
+              <div id="qualityHints" class="hint-list"></div>
+              <div class="metric-strip">
+                <div>
+                  <span id="answeredCount">0</span>
+                  <p>已答题</p>
+                </div>
+                <div>
+                  <span id="riskCount">0</span>
+                  <p>待处理</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="reviewView" class="view" aria-label="提交核对">
+          <section class="survey-panel">
+            <div class="survey-head">
+              <div>
+                <p class="eyebrow">提交前核对</p>
+                <h3>整页核对与字段映射</h3>
+              </div>
+              <span class="tag">Review</span>
+            </div>
+            <div id="reviewList" class="review-list"></div>
+            <div class="form-actions">
+              <button id="backToSurvey" class="secondary-button" type="button">返回修改</button>
+              <button id="submitSurvey" class="primary-button" type="button">提交到数据中台</button>
+            </div>
+          </section>
+        </section>
+
+        <section id="successView" class="view" aria-label="提交成功">
+          <section class="success-panel">
+            <span class="success-mark">OK</span>
+            <h3>数据流已跑通</h3>
+            <p>本次提交已完成“前端表单 - 中转适配层 - 智能表格底座”的模拟写入。</p>
+            <div class="success-actions">
+              <button id="newSubmission" class="secondary-button" type="button">继续填写</button>
+              <button class="primary-button" type="button" data-jump-admin data-admin-only>查看数据中台</button>
+            </div>
+          </section>
+        </section>
+
+        <section id="adminView" class="view" aria-label="数据中台">
+          <div class="admin-grid">
+            <section class="stat-panel">
+              <div>
+                <p>提交量</p>
+                <strong id="totalSubmissions">0</strong>
+              </div>
+              <div>
+                <p>平均完成度</p>
+                <strong id="avgCompletion">0%</strong>
+              </div>
+              <div>
+                <p>数据质量风险</p>
+                <strong id="qualityRisk">0</strong>
+              </div>
+            </section>
+
+            <section class="table-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">智能表格底座</p>
+                  <h3>提交记录</h3>
+                </div>
+                <button id="exportCsv" class="secondary-button" type="button">导出 CSV</button>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead id="submissionHead"></thead>
+                  <tbody id="submissionBody"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="insight-panel">
+              <div class="section-head">
+                <div>
+                  <p class="eyebrow">AI 分析模拟</p>
+                  <h3>自动洞察</h3>
+                </div>
+              </div>
+              <div id="insightList" class="insight-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="configView" class="view" aria-label="问卷配置">
+          <section class="config-panel">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Questionnaire Builder</p>
+                <h3>问卷编辑器</h3>
+              </div>
+              <div class="editor-actions">
+                <button id="copyConfig" class="secondary-button" type="button">复制配置</button>
+                <button id="addPage" class="secondary-button" type="button">新增分页</button>
+                <button id="saveQuestionnaire" class="primary-button" type="button">保存问卷</button>
+              </div>
+            </div>
+            <section class="ai-panel" aria-label="规则版智能问卷助手">
+              <div class="ai-panel-head">
+                <div>
+                  <p class="eyebrow">Rule-based AI Assistant</p>
+                  <h4>智能问卷助手</h4>
+                </div>
+                <span class="ai-badge">规则版</span>
+              </div>
+              <label>调研目标
+                <textarea id="aiGoal" placeholder="例如：调研产学研基地学生、导师和企业对项目报名、导师匹配、材料归档、成果评价的需求"></textarea>
+              </label>
+              <div class="ai-actions">
+                <button id="generateQuestionnaire" class="primary-button" type="button">生成问卷草案</button>
+                <button id="checkQuestionnaire" class="secondary-button" type="button">检查当前问卷</button>
+              </div>
+              <div id="aiFindings" class="ai-findings" aria-live="polite"></div>
+            </section>
+            <div class="editor-root">
+              <label>问卷标题<input id="editorTitle" type="text"></label>
+              <label>问卷说明<textarea id="editorDescription"></textarea></label>
+              <div id="editorPages" class="editor-pages"></div>
+              <p id="editorStatus" class="editor-status"></p>
+            </div>
+            <pre id="configJson"></pre>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./config.js?v=ai-rules-20260610"></script>
+    <script src="./app.js?v=ai-rules-20260610"></script>
+  </body>
+</html>

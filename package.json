@@ -1,0 +1,17 @@
+{
+  "name": "smart-questionnaire-system",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "check": "node --check app.js && node --check server.mjs && node --check cloudfunctions/submissions/index.js",
+    "sync:cloudfunction": "node scripts/sync-cloudfunction-shared.mjs",
+    "build:deploy": "node scripts/build-deploy-package.mjs",
+    "deploy:cloudbase": "powershell -ExecutionPolicy Bypass -File scripts/deploy-cloudbase.ps1"
+  },
+  "devDependencies": {
+    "@cloudbase/cli": "^3.5.6"
+  }
+}

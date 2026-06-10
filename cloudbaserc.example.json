@@ -1,0 +1,17 @@
+{
+  "envId": "your-cloudbase-env-id",
+  "functions": [
+    {
+      "name": "submissions",
+      "timeout": 5,
+      "envVariables": {
+        "SUBMISSIONS_COLLECTION": "survey_submissions",
+        "QUESTIONNAIRE_COLLECTION": "survey_questionnaires",
+        "ADMIN_TOKEN": "replace-with-a-random-admin-token"
+      },
+      "runtime": "Nodejs16.13",
+      "handler": "index.main",
+      "installDependency": true
+    }
+  ]
+}
