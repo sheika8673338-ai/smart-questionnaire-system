@@ -4,5 +4,5 @@
 window.SMART_SURVEY_API_BASE = "";
 
 // Keep this empty in public deployments.
-// When opening /?admin=1, the page will ask you to enter the admin token.
+// Use the administrator login option on the home page and enter the admin token when prompted.
 window.SMART_SURVEY_ADMIN_TOKEN = "";

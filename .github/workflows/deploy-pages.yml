@@ -1,0 +1,49 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site
+        run: |
+          mkdir -p out
+          cp index.html out/index.html
+          cp styles.css out/styles.css
+          cp app.js out/app.js
+          cp config.example.js out/config.example.js
+          cat > out/config.js <<'EOF'
+          window.SMART_SURVEY_API_BASE = "";
+          window.SMART_SURVEY_ADMIN_TOKEN = "";
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

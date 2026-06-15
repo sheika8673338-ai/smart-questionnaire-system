@@ -42,7 +42,7 @@ async function copyFrontend() {
       "window.SMART_SURVEY_API_BASE = \"\";",
       "",
       "// Do not hardcode the admin token in public hosting.",
-      "// Open /?admin=1 and enter the token when prompted.",
+      "// Use the administrator login option on the home page and enter the token when prompted.",
       "window.SMART_SURVEY_ADMIN_TOKEN = \"\";",
       "",
     ].join("\n"),
