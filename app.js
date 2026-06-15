@@ -91,13 +91,13 @@ const defaultQuestionnaire = {
 let questionnaire = structuredClone(defaultQuestionnaire);
 
 const storageKey = "smart-questionnaire-submissions";
+const adminSessionKey = "smart-survey-admin-token";
 const configuredApiBase = (window.SMART_SURVEY_API_BASE || "").replace(/\/$/, "");
 const apiBase = configuredApiBase || (window.location.protocol === "file:" ? null : "");
-const urlParams = new URLSearchParams(window.location.search);
-const isLocalHost = ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
-const isAdminMode = urlParams.get("admin") === "1" || isLocalHost;
+let isAdminMode = false;
 const state = {
-  view: "survey",
+  accessMode: getAdminToken() ? "admin" : null,
+  view: "login",
   pageIndex: 0,
   answers: {},
   submissions: loadLocalSubmissions(),
@@ -109,12 +109,25 @@ const elements = {
   viewTitle: document.querySelector("#viewTitle"),
   navTabs: [...document.querySelectorAll(".nav-tab")],
   views: {
+    login: document.querySelector("#loginView"),
     survey: document.querySelector("#surveyView"),
     review: document.querySelector("#reviewView"),
     success: document.querySelector("#successView"),
     admin: document.querySelector("#adminView"),
     config: document.querySelector("#configView"),
   },
+  accessBadge: document.querySelector("#accessBadge"),
+  logoutButton: document.querySelector("#logoutButton"),
+  guestEnter: document.querySelector("#guestEnter"),
+  loginTabs: [...document.querySelectorAll("[data-login-tab]")],
+  loginPanes: [...document.querySelectorAll("[data-login-pane]")],
+  adminAccount: document.querySelector("#adminAccount"),
+  adminLoginForm: document.querySelector("#adminLoginForm"),
+  adminPassword: document.querySelector("#adminPassword"),
+  guestLoginForm: document.querySelector("#guestLoginForm"),
+  guestIdentity: document.querySelector("#guestIdentity"),
+  loginAgreement: document.querySelector("#loginAgreement"),
+  loginError: document.querySelector("#loginError"),
   pageTitle: document.querySelector("#pageTitle"),
   surveyStage: document.querySelector("#surveyStage"),
   questionContainer: document.querySelector("#questionContainer"),
@@ -163,6 +176,44 @@ function loadLocalSubmissions() {
 
 function saveLocalSubmissions() {
   localStorage.setItem(storageKey, JSON.stringify(state.submissions));
+}
+
+function isAdminLoggedIn() {
+  return state.accessMode === "admin";
+}
+
+function setAdminSession(token) {
+  if (token) {
+    sessionStorage.setItem(adminSessionKey, token);
+    state.accessMode = "admin";
+    isAdminMode = true;
+    return;
+  }
+  sessionStorage.removeItem(adminSessionKey);
+  state.accessMode = null;
+  isAdminMode = false;
+}
+
+function clearLoginError() {
+  if (!elements.loginError) return;
+  elements.loginError.hidden = true;
+  elements.loginError.textContent = "";
+}
+
+function showLoginError(message) {
+  if (!elements.loginError) return;
+  elements.loginError.hidden = false;
+  elements.loginError.textContent = message;
+}
+
+function updateLoginTabUi(activeTab = "admin") {
+  elements.loginTabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.loginTab === activeTab);
+  });
+
+  elements.loginPanes.forEach((pane) => {
+    pane.classList.toggle("active", pane.dataset.loginPane === activeTab);
+  });
 }
 
 async function apiRequest(path, options = {}) {
@@ -1362,15 +1413,206 @@ function bindEvents() {
   });
 }
 
+getAdminToken = function getAdminTokenOverride() {
+  return sessionStorage.getItem(adminSessionKey) || window.SMART_SURVEY_ADMIN_TOKEN || "";
+};
+
+apiRequest = async function apiRequestOverride(path, options = {}) {
+  if (!apiBase) {
+    throw new Error("API is unavailable when opening index.html directly.");
+  }
+  const response = await fetch(`${apiBase}${path}`, buildRequestOptions(options));
+  return parseApiResponse(response);
+};
+
+refreshSubmissions = async function refreshSubmissionsOverride() {
+  if (!apiBase) {
+    state.apiMode = "local";
+    state.submissions = loadLocalSubmissions();
+    if (state.submissions.length === 0) {
+      seedDemoData();
+    }
+    return;
+  }
+
+  try {
+    if (!isAdminLoggedIn()) {
+      return;
+    }
+    const payload = await apiRequest("/api/submissions");
+    state.apiMode = "api";
+    state.apiError = null;
+    state.submissions = payload.submissions || [];
+  } catch (error) {
+    state.apiMode = "local";
+    state.apiError = error.message;
+    state.submissions = loadLocalSubmissions();
+    if (state.submissions.length === 0) {
+      seedDemoData();
+    }
+  }
+};
+
+updateAccessUi = function updateAccessUi() {
+  const isAdmin = isAdminLoggedIn();
+  const isLoggedIn = Boolean(state.accessMode);
+  const isLoginView = state.view === "login";
+
+  document.body.classList.toggle("login-state", isLoginView && !isLoggedIn);
+
+  elements.adminOnly.forEach((element) => {
+    element.hidden = !isAdmin;
+  });
+
+  elements.navTabs.forEach((tab) => {
+    const adminOnly = tab.hasAttribute("data-admin-only");
+    tab.hidden = adminOnly && !isAdmin;
+    tab.classList.toggle("active", tab.dataset.view === state.view);
+  });
+
+  if (elements.accessBadge) {
+    elements.accessBadge.hidden = !isLoggedIn;
+    elements.accessBadge.textContent = isAdmin ? "管理员已登录" : "访客模式";
+  }
+
+  if (elements.logoutButton) {
+    elements.logoutButton.hidden = !isLoggedIn;
+  }
+};
+
+showView = function showViewOverride(view) {
+  if (!state.accessMode && view !== "login") {
+    view = "login";
+  }
+  if (!isAdminLoggedIn() && ["admin", "config"].includes(view)) {
+    view = "survey";
+  }
+
+  state.view = view;
+  Object.entries(elements.views).forEach(([key, element]) => {
+    element.classList.toggle("active", key === view);
+  });
+
+  const titles = {
+    login: "选择登录方式",
+    survey: "调研问卷填写",
+    review: "提交前核对",
+    success: "提交结果",
+    admin: "数据中台",
+    config: "问卷配置",
+  };
+  elements.viewTitle.textContent = titles[view];
+  updateAccessUi();
+};
+
+const originalBindEvents = bindEvents;
+bindEvents = function bindEventsOverride() {
+  originalBindEvents();
+
+  updateLoginTabUi("admin");
+
+  elements.loginTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const mode = tab.dataset.loginTab;
+      updateLoginTabUi(mode);
+      clearLoginError();
+    });
+  });
+
+  elements.adminPassword?.addEventListener("input", clearLoginError);
+  elements.guestIdentity?.addEventListener("input", clearLoginError);
+  elements.loginAgreement?.addEventListener("change", clearLoginError);
+
+  elements.guestLoginForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    clearLoginError();
+    updateLoginTabUi("guest");
+
+    if (!elements.loginAgreement?.checked) {
+      showLoginError("请先勾选用户协议与隐私条款。");
+      return;
+    }
+
+    setAdminSession("");
+    state.accessMode = "guest";
+    showView("survey");
+    renderSurvey();
+  });
+
+  elements.adminLoginForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearLoginError();
+    updateLoginTabUi("admin");
+
+    if (!elements.loginAgreement?.checked) {
+      showLoginError("请先勾选用户协议与隐私条款。");
+      return;
+    }
+
+    const password = elements.adminPassword.value.trim();
+    if (!password) {
+      showLoginError("请输入管理员密码。");
+      return;
+    }
+
+    setAdminSession(password);
+    try {
+      if (apiBase) {
+        await apiRequest("/api/submissions");
+      } else {
+        await refreshSubmissions();
+      }
+      elements.adminPassword.value = "";
+      if (elements.adminAccount) {
+        elements.adminAccount.value = "admin";
+      }
+      clearLoginError();
+      await refreshSubmissions();
+      renderAdmin();
+      showView("admin");
+    } catch (error) {
+      setAdminSession("");
+      showLoginError(error.message || "管理员登录失败。");
+    }
+  });
+
+  elements.logoutButton?.addEventListener("click", () => {
+    setAdminSession("");
+    clearLoginError();
+    updateLoginTabUi("admin");
+    state.answers = {};
+    state.pageIndex = 0;
+    if (elements.guestIdentity) {
+      elements.guestIdentity.value = "";
+    }
+    showView("login");
+  });
+
+  document.querySelector("[data-jump-admin]")?.addEventListener("click", async () => {
+    if (!isAdminLoggedIn()) return;
+    await refreshSubmissions();
+    renderAdmin();
+    showView("admin");
+  });
+};
+
+const originalSubmitSurvey = submitSurvey;
+submitSurvey = async function submitSurveyOverride() {
+  await originalSubmitSurvey();
+  updateAccessUi();
+};
+
 async function init() {
   bindEvents();
   await refreshQuestionnaire();
-  if (!apiBase || isAdminMode) {
+  if (!apiBase || isAdminLoggedIn()) {
     await refreshSubmissions();
   }
   renderConfigEditor();
   renderSurvey();
   renderAdmin();
+  updateLoginTabUi("admin");
+  showView(state.accessMode ? (isAdminLoggedIn() ? "admin" : "survey") : "login");
 }
 
 init();

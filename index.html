@@ -18,7 +18,7 @@
         </div>
 
         <nav class="nav-tabs" aria-label="主导航">
-          <button class="nav-tab active" data-view="survey">填写问卷</button>
+          <button class="nav-tab" data-view="survey">填写问卷</button>
           <button class="nav-tab" data-view="admin" data-admin-only>数据中台</button>
           <button class="nav-tab" data-view="config" data-admin-only>问卷配置</button>
         </nav>
@@ -43,14 +43,62 @@
         <section class="topbar">
           <div>
             <p class="eyebrow">China University of Mining and Technology</p>
-            <h2 id="viewTitle">调研问卷填写</h2>
+            <h2 id="viewTitle">选择登录方式</h2>
           </div>
           <div class="topbar-actions">
+            <span id="accessBadge" class="access-badge" hidden></span>
+            <button id="logoutButton" class="secondary-button" type="button" hidden>退出登录</button>
             <button id="resetDemo" class="ghost-button" type="button" data-admin-only>重置演示数据</button>
           </div>
         </section>
 
-        <section id="surveyView" class="view active" aria-label="问卷填写">
+        <section id="loginView" class="view active" aria-label="登录入口">
+          <section class="login-scene">
+            <div class="login-backdrop"></div>
+            <section class="login-panel">
+              <div class="login-tabs" role="tablist" aria-label="登录方式">
+                <button class="login-tab" type="button" data-login-tab="guest">访客登录</button>
+                <button class="login-tab active" type="button" data-login-tab="admin">管理员登录</button>
+              </div>
+
+              <div class="login-main">
+                <div class="login-pane active" data-login-pane="admin">
+                  <div class="login-copy">
+                    <p class="login-kicker">Admin Access</p>
+                    <h3>进入问卷管理台</h3>
+                    <p>使用管理员账号和密码进入数据中台、查看提交记录并维护问卷配置。</p>
+                  </div>
+                  <form id="adminLoginForm" class="login-form">
+                    <input id="adminAccount" type="text" value="admin" autocomplete="username" placeholder="请输入管理员用户名" />
+                    <input id="adminPassword" type="password" autocomplete="current-password" placeholder="请输入登录密码" />
+                    <button class="login-submit-button" type="submit">登录</button>
+                  </form>
+                </div>
+
+                <div class="login-pane" data-login-pane="guest">
+                  <div class="login-copy">
+                    <p class="login-kicker">Guest Access</p>
+                    <h3>快速进入问卷填写</h3>
+                    <p>访客无需密码，可填写昵称或手机号后直接进入问卷页面开始作答。</p>
+                  </div>
+                  <form id="guestLoginForm" class="login-form">
+                    <input id="guestIdentity" type="text" autocomplete="nickname tel" placeholder="请输入昵称或手机号" />
+                    <button id="guestEnter" class="login-submit-button guest-submit-button" type="submit">直接进入</button>
+                  </form>
+                </div>
+
+                <label class="agreement-row">
+                  <input id="loginAgreement" type="checkbox" checked />
+                  <span>我已阅读并同意《用户服务协议》与《隐私条款》</span>
+                </label>
+
+                <p id="loginError" class="login-error" hidden></p>
+              </div>
+            </section>
+          </section>
+        </section>
+
+        <section id="surveyView" class="view" aria-label="问卷填写">
           <div class="survey-layout">
             <section class="survey-panel">
               <div class="survey-head">
@@ -208,7 +256,7 @@
       </main>
     </div>
 
-    <script src="./config.js?v=ai-rules-20260610"></script>
-    <script src="./app.js?v=ai-rules-20260610"></script>
+    <script src="./config.js?v=guest-admin-login-20260615"></script>
+    <script src="./app.js?v=guest-admin-login-20260615"></script>
   </body>
 </html>
