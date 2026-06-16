@@ -1194,7 +1194,7 @@ function renderOptionEditor(container, question) {
     });
     list.appendChild(row);
   });
-  container.querySelector("button").addEventListener("click", () => {
+  container.querySelector("[data-action='add-option']").addEventListener("click", () => {
     question.options = question.options || [];
     question.options.push("新选项");
     renderConfigEditor();
