@@ -1178,7 +1178,7 @@ function renderOptionEditor(container, question) {
   if (!["single", "multi", "weight100"].includes(question.type)) return;
 
   const options = question.options || [];
-  container.innerHTML = `<strong>选项</strong><div class="option-editor-list"></div><button class="secondary-button" type="button">新增选项</button>`;
+  container.innerHTML = `<strong>选项</strong><div class="option-editor-list"></div><button class="secondary-button" type="button" data-action="add-option">新增选项</button>`;
   const list = container.querySelector(".option-editor-list");
   options.forEach((option, index) => {
     const row = document.createElement("div");
