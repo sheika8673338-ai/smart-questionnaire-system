@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -6,6 +6,9 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const distRoot = path.join(root, "dist", "deploy");
 const frontendDir = path.join(distRoot, "frontend");
 const functionDir = path.join(distRoot, "cloudfunctions", "submissions");
+const assetVersion = "20260616-1";
+const versionedAppFile = `app.${assetVersion}.js`;
+const versionedStylesFile = `styles.${assetVersion}.css`;
 
 await rm(distRoot, { recursive: true, force: true });
 await mkdir(frontendDir, { recursive: true });
@@ -34,6 +37,9 @@ async function runSyncShared() {
 async function copyFrontend() {
   const files = ["index.html", "styles.css", "app.js", "config.example.js"];
   await Promise.all(files.map((file) => copyFile(path.join(root, file), path.join(frontendDir, file))));
+  await copyFile(path.join(root, "app.js"), path.join(frontendDir, versionedAppFile));
+  await copyFile(path.join(root, "styles.css"), path.join(frontendDir, versionedStylesFile));
+  await rewriteFrontendIndex();
   await writeFile(
     path.join(frontendDir, "config.js"),
     [
@@ -48,6 +54,16 @@ async function copyFrontend() {
     ].join("\n"),
     "utf8",
   );
+}
+
+async function rewriteFrontendIndex() {
+  const indexPath = path.join(frontendDir, "index.html");
+  let html = await readFile(indexPath, "utf8");
+  html = html
+    .replace(/\.\/styles\.css(?:\?v=[^"]+)?/g, `./${versionedStylesFile}`)
+    .replace(/\.\/app\.js(?:\?v=[^"]+)?/g, `./${versionedAppFile}`)
+    .replace(/\.\/config\.js(?:\?v=[^"]+)?/g, `./config.js?v=${assetVersion}`);
+  await writeFile(indexPath, html, "utf8");
 }
 
 async function copyCloudFunction() {
