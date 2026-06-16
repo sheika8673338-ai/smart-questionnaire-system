@@ -63,31 +63,35 @@ git push -u origin main
 
 ## 4. GitHub Pages 展示方式
 
-本项目可以用 GitHub Pages 展示前端页面，但 GitHub Pages 只能托管静态文件，不能运行 Node 服务或云函数。
+本项目可以使用 GitHub Pages 展示静态前端页面，但要注意：
 
-推荐展示方式：
+- GitHub 仓库页面用于展示源码和 README
+- GitHub Pages 用于展示静态前端效果
+- CloudBase 继续承担问卷配置、数据提交和后台接口能力
+
+推荐的展示结构：
 
 ```text
-GitHub 仓库：展示源码和 README
-GitHub Pages：展示静态前端
-CloudBase：继续提供问卷配置、提交数据和后台接口
+GitHub 仓库：源码 + README + 文档
+GitHub Pages：静态前端演示页
+CloudBase：在线表单接口与管理员后台能力
 ```
 
-如果要让 GitHub Pages 页面连接 CloudBase，需要在 Pages 发布版本的 `config.js` 中设置：
+如果希望 GitHub Pages 连接 CloudBase，需要在 Pages 部署版的 `config.js` 中设置：
 
 ```js
 window.SMART_SURVEY_API_BASE = "https://your-cloudbase-service-domain";
 window.SMART_SURVEY_ADMIN_TOKEN = "";
 ```
 
-不要在 `config.js` 中写入管理员令牌。后台打开 `/?admin=1` 时手动输入即可。
+不要在公开版 `config.js` 中写入管理员令牌。管理员应通过首页的“管理员登录”入口手动输入。
 
 ## 5. 简历写法参考
 
 ```text
 智能问卷与数据中台系统
-- 基于原生 JavaScript + Node.js + CloudBase 实现动态问卷、后台配置、云端提交和数据看板。
-- 设计配置驱动问卷模型，支持单选、多选、评分、100 分权重分配等题型，并实现前后端双重校验。
-- 实现规则版智能问卷助手，可根据调研目标生成问卷草案，并从题量、题型覆盖、选项质量、字段重复等维度进行质量评分。
-- 支持 CloudBase 云函数与云数据库部署，形成可公开访问的在线演示版本。
+- 基于原生 JavaScript + Node.js + CloudBase 实现登录分流、动态问卷、后台配置、在线提交与数据看板
+- 设计配置驱动的问卷模型，支持单选、多选、评分、100 分权重分配等题型，并实现前后端双重校验
+- 改造访客登录 / 管理员登录双入口，区分填写场景与后台管理场景
+- 支持 CloudBase 云函数与静态网站托管部署，形成可在线演示的完整项目闭环
 ```
